@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "disqo.mary.git.analyzer.restriction",
+      "type": "java.lang.String",
+      "description": "Description for disqo.mary.git.analyzer.restriction."
+    }
+  ] }

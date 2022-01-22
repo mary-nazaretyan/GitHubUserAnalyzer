@@ -1,46 +1,50 @@
 package com.disqo.mary.gitanalyzer.job;
 
+import static java.util.Collections.emptyIterator;
+import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toCollection;
+
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import com.disqo.mary.gitanalyzer.config.AnalyzerConfig;
+import com.disqo.mary.gitanalyzer.model.entity.UserDetails;
 import com.disqo.mary.gitanalyzer.model.entity.UserInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
-public class GitHubUserReader implements ItemStreamReader<UserInfo> {
+public class GitHubUserReader implements ItemStreamReader<UserDetails> {
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate;
+    private final HttpEntity<String> httpEntity;
+    private final AnalyzerConfig config;
 
-    private Iterator<UserInfo> iterator;
+    private Iterator<String> iterator = emptyIterator();
+    private ArrayDeque<Integer> sinceNumbers;
 
-
-    @SneakyThrows
     @Override
     public void open(@NonNull ExecutionContext executionContext) throws ItemStreamException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        final var document = restTemplate.exchange("https://api.github.com/users?since=0&per_page=100", HttpMethod.GET, entity, String.class).getBody();
-
-        var list = mapper.readValue(document, new TypeReference<List<UserInfo>>(){});
-
-
-        iterator = list.iterator();
+        sinceNumbers = sinceNumbers();
     }
 
     @Override
@@ -54,7 +58,50 @@ public class GitHubUserReader implements ItemStreamReader<UserInfo> {
     }
 
     @Override
-    public UserInfo read() {
-        return iterator.hasNext() ? iterator.next() : null;
+    public UserDetails read() {
+        return Option.when(iterator.hasNext(), () -> iterator)
+            .orElse(() -> Option.of(iterator = iterator()))
+            .filter(Iterator::hasNext)
+            .map(Iterator::next)
+            .map(this::getJson)
+            .filter(Try::isSuccess)
+            .map(Try::get)
+            .map(s ->
+                     Try.of(() -> mapper.readValue(s, UserDetails.class)))
+            .filter(Try::isSuccess)
+            .map(Try::get)
+            .getOrElse(() -> null);
+    }
+
+    private Iterator<String> iterator() {
+        return Stream.ofNullable(sinceNumbers)
+            .filter(not(CollectionUtils::isEmpty))
+            .map(Queue::poll)
+            .map(since -> config.getUrl() + since)
+            .map(this::getJson)
+            .filter(Try::isSuccess)
+            .map(Try::get)
+            .map(s ->
+                     Try.of(() -> mapper.readValue(s, new TypeReference<List<UserInfo>>() {
+                     })))
+            .filter(Try::isSuccess)
+            .map(Try::get)
+            .flatMap(Collection::stream)
+            .map(UserInfo::getLogin)
+            .map(login -> config.getUserUrl() + login)
+            .distinct()
+            .iterator();
+    }
+
+    private Try<String> getJson(String url) {
+        return Try.of(() -> restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class))
+            .filter(stringResponseEntity -> stringResponseEntity.getStatusCode().is2xxSuccessful())
+            .map(ResponseEntity::getBody);
+    }
+
+    private ArrayDeque<Integer> sinceNumbers() {
+        return IntStream.iterate(0, since -> since < config.getRestriction(), since -> since += 100)
+            .boxed()
+            .collect(toCollection(ArrayDeque::new));
     }
 }

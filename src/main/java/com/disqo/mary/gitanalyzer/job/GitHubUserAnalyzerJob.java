@@ -1,6 +1,6 @@
 package com.disqo.mary.gitanalyzer.job;
 
-import com.disqo.mary.gitanalyzer.model.entity.UserInfo;
+import com.disqo.mary.gitanalyzer.model.entity.UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -17,13 +17,13 @@ public class GitHubUserAnalyzerJob {
 
     @Bean
     public Job job(Step scraper) {
-        return jobBuilderFactory.get("github-users6").start(scraper).build();
+        return jobBuilderFactory.get("github-users").start(scraper).build();
     }
 
     @Bean
     public Step scraper(GitHubUserReader reader, GitHubUserWriter writer) {
-        return stepBuilderFactory.get("grabStep")
-            .<UserInfo, UserInfo>chunk(1024)
+        return stepBuilderFactory.get("Collecting User Data")
+            .<UserDetails, UserDetails>chunk(1)
             .reader(reader)
             .writer(writer)
             .build();

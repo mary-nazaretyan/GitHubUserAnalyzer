@@ -1,6 +1,6 @@
 package com.disqo.mary.gitanalyzer.service;
 
-import com.disqo.mary.gitanalyzer.model.entity.UserInfo;
+import com.disqo.mary.gitanalyzer.model.entity.UserDetails;
 import com.disqo.mary.gitanalyzer.repository.GithubUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ public class GitHubUserService {
 
     private final GithubUserRepository githubUserRepository;
 
-    public void save(UserInfo userInfo) {
-        githubUserRepository.save(userInfo);
+    public void save(UserDetails userDetails) {
+        githubUserRepository.save(userDetails);
     }
 }

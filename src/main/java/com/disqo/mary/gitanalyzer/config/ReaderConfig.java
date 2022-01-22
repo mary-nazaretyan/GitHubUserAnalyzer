@@ -1,5 +1,6 @@
 package com.disqo.mary.gitanalyzer.config;
 
+import java.util.List;
 import javax.sql.DataSource;
 
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,9 @@ import org.springframework.batch.core.repository.support.JobRepositoryFactoryBea
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 public class ReaderConfig {
 
     private final DataSource dataSource;
+    private final AnalyzerConfig config;
 
     private JobRepository getJobRepository() throws Exception {
         JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
@@ -43,5 +48,13 @@ public class ReaderConfig {
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public HttpEntity<String> httpEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(config.getToken());
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(headers);
     }
 }
