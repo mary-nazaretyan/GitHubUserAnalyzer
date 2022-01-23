@@ -23,7 +23,7 @@ public class GitHubUserAnalyzerJob {
     @Bean
     public Step scraper(GitHubUserReader reader, GitHubUserWriter writer) {
         return stepBuilderFactory.get("Collecting User Data")
-            .<UserDetails, UserDetails>chunk(1)
+            .<UserDetails, UserDetails>chunk(1024)
             .reader(reader)
             .writer(writer)
             .build();

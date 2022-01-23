@@ -54,7 +54,7 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
 
     @Override
     public void close() throws ItemStreamException {
-
+        iterator = emptyIterator();
     }
 
     @Override
@@ -64,8 +64,8 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .filter(Iterator::hasNext)
             .map(Iterator::next)
             .map(this::getJson)
-            .filter(Try::isSuccess)
-            .map(Try::get)
+//            .filter(Try::isSuccess)
+//            .map(Try::get)
             .map(s ->
                      Try.of(() -> mapper.readValue(s, UserDetails.class)))
             .filter(Try::isSuccess)
@@ -79,8 +79,8 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .map(Queue::poll)
             .map(since -> config.getUrl() + since)
             .map(this::getJson)
-            .filter(Try::isSuccess)
-            .map(Try::get)
+//            .filter(Try::isSuccess)
+//            .map(Try::get)
             .map(s ->
                      Try.of(() -> mapper.readValue(s, new TypeReference<List<UserInfo>>() {
                      })))
@@ -93,14 +93,18 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .iterator();
     }
 
-    private Try<String> getJson(String url) {
-        return Try.of(() -> restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class))
-            .filter(stringResponseEntity -> stringResponseEntity.getStatusCode().is2xxSuccessful())
-            .map(ResponseEntity::getBody);
+//    private Try<String> getJson(String url) {
+    private String getJson(String url) {
+        //TODO: add RateLimiter to avoid the auth. problems of website
+
+        return restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class).getBody();
+//        return Try.of(() -> restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class))
+//            .filter(stringResponseEntity -> stringResponseEntity.getStatusCode().is2xxSuccessful())
+//            .map(ResponseEntity::getBody);
     }
 
     private ArrayDeque<Integer> sinceNumbers() {
-        return IntStream.iterate(0, since -> since < config.getRestriction(), since -> since += 100)
+        return IntStream.iterate(6000, since -> since < config.getRestriction(), since -> since += 100)
             .boxed()
             .collect(toCollection(ArrayDeque::new));
     }

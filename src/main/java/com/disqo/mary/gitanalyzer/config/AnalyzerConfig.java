@@ -15,6 +15,8 @@ public class AnalyzerConfig implements InitializingBean {
     private String url;
     private String userUrl;
     private String token;
+    private String user;
+    private String password;
 
     @Override
     public void afterPropertiesSet() {
