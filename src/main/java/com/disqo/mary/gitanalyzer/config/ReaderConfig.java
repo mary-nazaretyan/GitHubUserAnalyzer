@@ -53,8 +53,8 @@ public class ReaderConfig {
     @Bean
     public HttpEntity<String> httpEntity() {
         HttpHeaders headers = new HttpHeaders();
-//        headers.setBearerAuth(config.getToken());
-        headers.setBasicAuth(config.getUser(), config.getPassword());
+        headers.setBearerAuth(config.getToken());
+//        headers.setBasicAuth(config.getUser(), config.getPassword());
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         return new HttpEntity<>(headers);
     }

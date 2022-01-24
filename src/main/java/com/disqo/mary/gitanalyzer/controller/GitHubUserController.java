@@ -29,13 +29,13 @@ public class GitHubUserController {
     /**
      * Returns the list of {@link UserDetailsDTO} entities with requested pagination parameters.
      *
-     * @param page Page in the result set to paginate to, default value is 1.
+     * @param page Page in the result set to paginate to, default value is 0.
      * @param size Window pagination size, default value is 10.
      *
      * @return the list of {@link UserDetailsDTO} entities and response status.
      */
     @GetMapping()
-    public ResponseEntity<List<UserDetailsDTO>> getUsers(@RequestParam(name = "page", defaultValue = "1") int page,
+    public ResponseEntity<List<UserDetailsDTO>> getUsers(@RequestParam(name = "page", defaultValue = "0") int page,
                                                          @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id"));
         return new ResponseEntity<>(gitHubUserService.getUsers(pageable), HttpStatus.OK);
@@ -48,7 +48,7 @@ public class GitHubUserController {
      *
      * @return {@link UserDetailsDTO} entities list and response status.
      */
-    @GetMapping("/{company}")
+    @GetMapping("/company/{company}")
     public ResponseEntity<List<UserDetailsDTO>> getUserByCompany(@PathVariable("company") String company) {
         return new ResponseEntity<>(gitHubUserService.getUserByCompany(company), HttpStatus.OK);
     }
@@ -60,7 +60,7 @@ public class GitHubUserController {
      *
      * @return {@link UserDetailsDTO} entities list and response status.
      */
-    @GetMapping("/{location}")
+    @GetMapping("/location/{location}")
     public ResponseEntity<List<UserDetailsDTO>> getUserByLocation(@PathVariable("location") String location) {
         return new ResponseEntity<>(gitHubUserService.getUserByLocation(location), HttpStatus.OK);
     }

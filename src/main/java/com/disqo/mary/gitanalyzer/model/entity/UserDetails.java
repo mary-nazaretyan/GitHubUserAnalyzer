@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "userDetail")
+@Table(name = "userDetails")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserDetails {
     private String login;

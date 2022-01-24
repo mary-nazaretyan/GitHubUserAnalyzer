@@ -17,15 +17,12 @@ public class GitHubUserAnalyzerJob {
 
     @Bean
     public Job job(Step scraper) {
-        return jobBuilderFactory.get("github-usersw").start(scraper).build();
+        return jobBuilderFactory.get("github-users").start(scraper).build();
     }
 
     @Bean
     public Step scraper(GitHubUserReader reader, GitHubUserWriter writer) {
-        return stepBuilderFactory.get("Collecting User Data")
-            .<UserDetails, UserDetails>chunk(1)
-            .reader(reader)
-            .writer(writer)
-            .build();
+        return stepBuilderFactory.get("Collecting User Data").<UserDetails, UserDetails>chunk(1).reader(reader)
+            .writer(writer).build();
     }
 }

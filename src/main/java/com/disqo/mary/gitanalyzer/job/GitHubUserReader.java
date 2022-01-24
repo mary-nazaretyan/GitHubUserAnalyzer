@@ -26,7 +26,6 @@ import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -64,10 +63,7 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .filter(Iterator::hasNext)
             .map(Iterator::next)
             .map(this::getJson)
-//            .filter(Try::isSuccess)
-//            .map(Try::get)
-            .map(s ->
-                     Try.of(() -> mapper.readValue(s, UserDetails.class)))
+            .map(s -> Try.of(() -> mapper.readValue(s, UserDetails.class)))
             .filter(Try::isSuccess)
             .map(Try::get)
             .getOrElse(() -> null);
@@ -79,11 +75,7 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .map(Queue::poll)
             .map(since -> config.getUrl() + since)
             .map(this::getJson)
-//            .filter(Try::isSuccess)
-//            .map(Try::get)
-            .map(s ->
-                     Try.of(() -> mapper.readValue(s, new TypeReference<List<UserInfo>>() {
-                     })))
+            .map(s -> Try.of(() -> mapper.readValue(s, new TypeReference<List<UserInfo>>() {})))
             .filter(Try::isSuccess)
             .map(Try::get)
             .flatMap(Collection::stream)
@@ -93,18 +85,14 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .iterator();
     }
 
-//    private Try<String> getJson(String url) {
     private String getJson(String url) {
-        //TODO: add RateLimiter to avoid the auth. problems of website
-
-        return restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class).getBody();
-//        return Try.of(() -> restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class))
-//            .filter(stringResponseEntity -> stringResponseEntity.getStatusCode().is2xxSuccessful())
-//            .map(ResponseEntity::getBody);
+        //TODO: add RateLimiter to avoid the auth., limit problems of website
+        return restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class)
+            .getBody();
     }
 
     private ArrayDeque<Integer> sinceNumbers() {
-        return IntStream.iterate(6000, since -> since < config.getRestriction(), since -> since += 100)
+        return IntStream.iterate(0, since -> since < config.getRestriction(), since -> since += 100)
             .boxed()
             .collect(toCollection(ArrayDeque::new));
     }
