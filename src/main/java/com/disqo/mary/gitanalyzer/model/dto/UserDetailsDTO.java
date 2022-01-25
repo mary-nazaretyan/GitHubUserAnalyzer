@@ -1,5 +1,6 @@
 package com.disqo.mary.gitanalyzer.model.dto;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import com.disqo.mary.gitanalyzer.model.entity.UserDetails;
@@ -39,8 +40,8 @@ public class UserDetailsDTO {
     private int publicGists;
     private int followers;
     private int following;
-    private Date createdAt;
-    private Date updatedAtString;
+    private LocalDate createdAt;
+    private LocalDate updatedAtString;
 
     public UserDetailsDTO(UserDetails userDetails) {
         login = userDetails.getLogin();

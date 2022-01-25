@@ -5,9 +5,8 @@ import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toCollection;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Queue;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,7 +14,6 @@ import java.util.stream.Stream;
 import com.disqo.mary.gitanalyzer.config.AnalyzerConfig;
 import com.disqo.mary.gitanalyzer.model.entity.UserDetails;
 import com.disqo.mary.gitanalyzer.model.entity.UserInfo;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -75,10 +73,10 @@ public class GitHubUserReader implements ItemStreamReader<UserDetails> {
             .map(Queue::poll)
             .map(since -> config.getUrl() + since)
             .map(this::getJson)
-            .map(s -> Try.of(() -> mapper.readValue(s, new TypeReference<List<UserInfo>>() {})))
+            .map(s -> Try.of(() -> mapper.readValue(s, UserInfo[].class)))
             .filter(Try::isSuccess)
             .map(Try::get)
-            .flatMap(Collection::stream)
+            .flatMap(Arrays::stream)
             .map(UserInfo::getLogin)
             .map(login -> config.getUserUrl() + login)
             .distinct()

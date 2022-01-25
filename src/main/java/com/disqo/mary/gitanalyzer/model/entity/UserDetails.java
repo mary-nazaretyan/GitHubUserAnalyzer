@@ -1,6 +1,6 @@
 package com.disqo.mary.gitanalyzer.model.entity;
 
-import java.util.Date;
+import java.time.LocalDate;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -46,6 +46,6 @@ public class UserDetails {
     private int publicGists;
     private int followers;
     private int following;
-    private Date createdAt;
-    private Date updatedAtString;
+    private LocalDate createdAt;
+    private LocalDate updatedAtString;
 }
